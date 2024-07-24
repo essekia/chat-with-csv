@@ -5,7 +5,7 @@ from typing import TextIO
 import openai
 import pandas as pd
 import streamlit as st
-from langchain.agents import create_csv_agent, create_pandas_dataframe_agent
+from langchain_experimental.agents import AgentExecutor, create_csv_agent, create_pandas_dataframe_agent
 from langchain.llms import OpenAI
 
 #openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -27,8 +27,12 @@ def get_answer_csv(file: TextIO, query: str) -> str:
     #df = pd.read_csv("titanic.csv")
 
     # Create an agent using OpenAI and the Pandas dataframe
-    agent = create_csv_agent(OpenAI(temperature=0), file, verbose=False)
+    agent = create_csv_agent(OpenAI(temperature=0), file, verbose=False, allow_dangerous_code=True, model='gpt-4-turbo')
     #agent = create_pandas_dataframe_agent(OpenAI(temperature=0), df, verbose=False)
+    
+    # Wrap the agent with the AgentExecutor to handle parsing errors
+    executor = AgentExecutor(agent=agent, handle_parsing_errors=True)
+
 
     # Run the agent on the given query and return the answer
     #query = "whats the square root of the average age?"
